@@ -1,54 +1,79 @@
 const { faker } = require('@faker-js/faker');
+const boom = require('@hapi/boom')
 
-class ProductService {
+class ProductsService {
 
-  // Necesitamos un constructor
   constructor(){
-    // array que inica con 0 productos
     this.products = [];
-    // Cada vez que genere una instancia del servicio empezara a crear los 100 registros
     this.generate();
   }
 
-  // Metodo para generar
-  generate(){
-    // Pasamos esta logica de negocio
+  generate() {
     const limit = 100;
     for (let index = 0; index < limit; index++) {
       this.products.push({
-        // Creamos un id para los productso
-        id: faker.datatype.uunid(),
+        id: faker.datatype.uuid(),
         name: faker.commerce.productName(),
         price: parseInt(faker.commerce.price(), 10),
-        image: faker.image.url(),
+        image: faker.image.imageUrl(),
+        isBlock: faker.datatype.boolean(),
       });
     }
   }
 
-  // Crear las funcionalidades para products
-  // Manejo transaccional
-  create(){
-
+  async create(data) {
+    const newProduct = {
+      id: faker.datatype.uuid(),
+      ...data
+    }
+    this.products.push(newProduct);
+    return newProduct;
   }
 
-  find(){
-    // hacer return del array de products
-    return this.products;
+  find() {
+    // DEvolvemos una promesa con un tiempo de espera
+    return new Promise((resolve, reject) => {
+      setTimeout(() =>{
+        resolve(this.products);
+      }, 5000);
+    })
   }
 
-  //usamos ese id
-  findOne(id){
-    return this.products.find(item => item.id === id)
+  async findOne(id) {
+    const product = this.products.find(item => item.id === id);
+    if(!product){
+      throw boom.notFound('product not found');
+    }
+    if ( product.isBlock){
+      throw boom.conflict('product is block');
+    }
+    return product;
   }
 
-  update(){
-
+  async update(id, changes) {
+    const index = this.products.findIndex(item => item.id === id);
+    if (index === -1) {
+      // De esta manera podemos lanzar el error
+      throw boom.notFound('product not found');
+    }
+    const product = this.products[index];
+    this.products[index] = {
+      ...product,
+      ...changes
+    };
+    return this.products[index];
   }
 
-  delete(){
 
+  async delete(id) {
+    const index = this.products.findIndex(item => item.id === id);
+    if (index === -1) {
+      throw boom.notFound('product not found');
+    }
+    this.products.splice(index, 1);
+    return { id };
   }
 
 }
 
-module.exports = ProductService;
+module.exports = ProductsService;
