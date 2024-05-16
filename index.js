@@ -1,5 +1,7 @@
 const express = require('express');
 const routerApi = require('./routes');
+// Importamos la libreria
+const cors = require('cors');
 
 // Se importan los middlewares
 const { logErrors, errorHandler, boomErrorHandler } = require('./middlewares/error.handler');
@@ -9,6 +11,24 @@ const port = 3000;
 
 //indicamos que use el middleware
 app.use(express.json());
+
+// Creamos un array
+// Indica que estos son los rigenes de los cuales si quiero recibir peticiones
+const whitelist = ['http://localhost:8080', 'https://myapp.com'];
+const options = {
+  // Acceso permitido
+  origin: (prigin, callback) => {
+    if(whitelist.includes(origin)){
+      callback(null, true);
+    }else{
+      // Acceso no permitido
+      callback(new Error('no permitido'));
+    }
+  }
+}
+// Indicamos que queremos usarla
+// Aqui esta indicando quq quiere habilitar cualquier origen
+app.use(cors());
 
 app.get('/', (req, res) => {
   res.send('Hola mi server en express');
