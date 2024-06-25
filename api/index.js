@@ -2,9 +2,10 @@ const express = require('express');
 const routerApi = require('./routes');
 // Importamos la libreria
 const cors = require('cors');
+const { chackApiKey } = require('./middlewares/auth.handler');
 
 // Se importan los middlewares
-const { logErrors, errorHandler, boomErrorHandler } = require('./middlewares/error.handler');
+const { logErrors, errorHandler, boomErrorHandler, ormErrorHandler } = require('./middlewares/error.handler');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -30,11 +31,13 @@ const options = {
 // Aqui esta indicando quq quiere habilitar cualquier origen
 app.use(cors());
 
+require('./utils/auth');
+
 app.get('/api', (req, res) => {
   res.send('Hola mi server en express');
 });
 
-app.get('/api/nueva-ruta', (req, res) => {
+app.get('/api/nueva-ruta', chackApiKey, (req, res) => {
   res.send('Hola, soy una nueva ruta');
 });
 
@@ -44,6 +47,7 @@ routerApi(app);
 // Es importante el orden en el que se esten ejecutando
 // Asi como se esten colocando sera el orden el que se ejecutaran
 app.use(logErrors);
+app.use(ormErrorHandler);
 app.use(boomErrorHandler);
 app.use(errorHandler);
 

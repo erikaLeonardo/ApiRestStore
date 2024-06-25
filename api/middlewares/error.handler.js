@@ -1,4 +1,5 @@
-const { stack } = require("../routes/products.router");
+const { ValidationError } = require("sequelize");
+const { stack } = require("../routes/publicacion.router");
 
 // Se encargara de capturar cualquier error
 function logErrors (err, req, res, next){
@@ -35,4 +36,15 @@ function boomErrorHandler(err, req, res, next){
   }
 }
 
-module.exports = { logErrors, errorHandler, boomErrorHandler }
+function ormErrorHandler(err, req, res, next){
+  if (err instanceof ValidationError) {
+    res.status(409).json({
+      statusCode: 409,
+      message: err.name,
+      error:err.errors
+    });
+  }
+  next(err);
+}
+
+module.exports = { logErrors, errorHandler, boomErrorHandler, ormErrorHandler }
