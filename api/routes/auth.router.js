@@ -6,7 +6,7 @@ router.post('/login',
   passport.authenticate('local', {session: false}),
   async (req, res, next) => {
     try {
-      res.json(req.usuario);
+      res.json({ message: 'Login successful', usuario: req.usuario });
     } catch (error) {
       next(error);
     }
